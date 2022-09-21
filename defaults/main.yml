@@ -1,0 +1,6 @@
+---
+# defaults file for nutanix_role_prism_proxy
+  validate_certs: no
+  prism_proxy_types:
+    - "HTTP"
+    - "HTTPS"

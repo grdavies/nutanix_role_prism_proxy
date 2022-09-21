@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  gather_facts: false
+  roles:
+    - role: ../..
+  vars:
+    prism_ip: 10.38.185.37
+    prism_username: admin
+    prism_password: nx2Tech165!
+    prism_proxy_name: test
+    prism_proxy_address: 1.1.1.2
+    prism_proxy_port: 8080
+    # prism_proxy_username: user
+    prism_proxy_types:
+      - http
+      - https
