@@ -1,0 +1,9 @@
+whitelist:
+{% for item in prism_proxy_whitelist %}
+  - target: "{{ item }}"
+{% if item | ansible.utils.ipaddr %}
+    targetType: "IPV4_ADDRESS"
+{% else %}
+    targetType: "DOMAIN_NAME_SUFFIX"
+{% endif %}
+{% endfor %}

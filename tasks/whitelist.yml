@@ -1,0 +1,57 @@
+---
+  - name: Gather proxy configuration from cluster
+    uri:
+      url: "{{ prism_api_v2 }}/http_proxies"
+      method: GET
+      validate_certs: "{{ validate_certs }}"
+      body_format: json
+      headers:
+        Authorization: "{{ prism_api_auth }}"
+      return_content: yes
+    register: prism_configured_proxies
+
+  - name: Gather proxy whitelist
+    uri:
+      url: "{{ prism_api_v1 }}/http_proxies/whitelist"
+      method: GET
+      validate_certs: "{{ validate_certs }}"
+      body_format: json
+      headers:
+        Authorization: "{{ prism_api_auth }}"
+      return_content: yes
+    register: prism_current_proxy_whitelist
+
+  - name: Compare configured proxy whitelist to defined proxy whitelist
+    set_fact:
+      prism_proxy_whitelist_extra:
+    loop: "{{ prism_current_proxy_whitelist.json.whitelist | map(attribute='target') | list }}"
+    register: compare_configured_whitelist
+    when:
+      - prism_current_proxy_whitelist.json.whitelist | length() > 0
+      - item not in prism_proxy_whitelist
+      - prism_configured_proxies.json.metadata.count == 1
+
+  - name: Compare defined proxy whitelist to configured proxy whitelist
+    set_fact:
+      prism_proxy_whitelist_missing:
+    loop: "{{ prism_proxy_whitelist }}"
+    register: compare_defined_whitelist
+    when:
+      - item not in prism_current_proxy_whitelist.json.whitelist | map(attribute='target') | list
+      - prism_configured_proxies.json.metadata.count == 1
+
+  - name: Update proxy whitelist
+    uri:
+      url: "{{ prism_api_v1 }}/http_proxies/whitelist"
+      method: PUT
+      validate_certs: "{{ validate_certs }}"
+      body: "{{ lookup('template', 'proxy_whitelist.j2') | from_yaml | to_json }}"
+      body_format: json
+      headers:
+        Authorization: "{{ prism_api_auth }}"
+      return_content: yes
+    changed_when: true
+    register: prism_proxy_whitelist_update
+    when:
+      - prism_configured_proxies.json.metadata.count == 1
+      - prism_proxy_whitelist_extra is defined or prism_proxy_whitelist_missing is defined

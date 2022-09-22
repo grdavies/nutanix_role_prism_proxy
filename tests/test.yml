@@ -11,6 +11,8 @@
     prism_proxy_address: 1.1.1.2
     prism_proxy_port: 8080
     # prism_proxy_username: user
-    prism_proxy_types:
-      - http
-      - https
+    # prism_proxy_types:
+    #   - http
+    #   - https
+    # prism_proxy_whitelist:
+    #   - "*.ntnxlab.local"
