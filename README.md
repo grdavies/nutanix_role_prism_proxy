@@ -30,9 +30,9 @@ This Ansible role sets the HTTP proxy configuration for Prism Element and Prism 
   roles:
     - role: grdavies.nutanix_role_prism_proxy
   vars:
-    prism_ip: 10.38.185.37
-    prism_username: admin
-    prism_password: nx2Tech165!
+    nutanix_host: 10.38.185.37
+    nutanix_username: admin
+    nutanix_password: nx2Tech165!
     prism_proxy_name: my_proxy
     prism_proxy_address: proxy.ntnxlab.local
     prism_proxy_port: 8080
