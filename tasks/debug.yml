@@ -1,0 +1,23 @@
+---
+  - name: Debug proxy.yml variables
+    debug:
+      var: "{{ item }}"
+    loop:
+      - nutanix_configured_proxies.json | default('')
+      - nutanix_proxy_name_mismatch
+      - nutanix_proxy_config_mismatch
+      - nutanix_proxy_extra_type
+      - nutanix_proxy_missing_type
+      - nutanix_proxy_deleted.json | default('')
+      - nutanix_create_proxy.json | default('')
+      - nutanix_update_proxy.json | default('')
+
+  - name: Debug whitelist.yml variables
+    debug:
+      var: "{{ item }}"
+    loop:
+      - nutanix_configured_proxies.json | default('')
+      - nutanix_current_proxy_whitelist.json | default('')
+      - nutanix_proxy_whitelist_extra
+      - nutanix_proxy_whitelist_missing
+      - nutanix_proxy_whitelist_update.json | default('')

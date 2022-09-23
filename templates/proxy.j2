@@ -1,8 +1,8 @@
-address: "{{ prism_proxy_address }}"
-port: {{ prism_proxy_port }}
-name: "{{ prism_proxy_name }}"
-{% if prism_proxy_username | default("") != "" and prism_proxy_password | default("") != "" %}
-username: "{{ prism_proxy_username }}"
-password: "{{ prism_proxy_password }}"
+address: "{{ nutanix_proxy_address }}"
+port: {{ nutanix_proxy_port }}
+name: "{{ nutanix_proxy_name }}"
+{% if nutanix_proxy_username | default("") != "" and nutanix_proxy_password | default("") != "" %}
+username: "{{ nutanix_proxy_username }}"
+password: "{{ nutanix_proxy_password }}"
 {% endif %}
-proxy_types: {{ prism_proxy_types }}
+proxy_types: {{ nutanix_proxy_types }}

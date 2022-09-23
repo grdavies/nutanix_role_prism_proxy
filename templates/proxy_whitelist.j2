@@ -1,5 +1,5 @@
 whitelist:
-{% for item in prism_proxy_whitelist %}
+{% for item in nutanix_proxy_whitelist %}
   - target: "{{ item }}"
 {% if item | ansible.utils.ipaddr %}
     targetType: "IPV4_ADDRESS"

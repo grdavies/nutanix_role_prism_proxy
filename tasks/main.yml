@@ -1,31 +1,35 @@
-# tasks file for nutanix_role_prism_proxy
-  - name: Check prism_proxy_name is provided
+# tasks file for nutanix_role_nutanix_proxy
+  - name: Check nutanix_proxy_name is provided
     fail:
-      msg: var prism_proxy_name is required
+      msg: var nutanix_proxy_name is required
     when:
-      - prism_proxy_name is not defined
+      - nutanix_proxy_name is not defined
 
-  - name: Check prism_proxy_address is provided
+  - name: Check nutanix_proxy_address is provided
     fail:
-      msg: var prism_proxy_address is required
+      msg: var nutanix_proxy_address is required
     when:
-      - prism_proxy_address is not defined
+      - nutanix_proxy_address is not defined
 
-  - name: Check prism_proxy_port is provided
+  - name: Check nutanix_proxy_port is provided
     fail:
-      msg: var prism_proxy_port is required
+      msg: var nutanix_proxy_port is required
     when:
-      - prism_proxy_port is not defined
+      - nutanix_proxy_port is not defined
 
-  - name: Check prism_proxy_types is provided
+  - name: Check nutanix_proxy_types is provided
     fail:
-      msg: var prism_proxy_types is required
+      msg: var nutanix_proxy_types is required
     when:
-      - prism_proxy_types is not defined
+      - nutanix_proxy_types is not defined
 
   - name: Inputs for proxy server task
     include_tasks: proxy.yml
 
   - name: Inputs for proxy server whitelist task
     include_tasks: whitelist.yml
-    when: prism_proxy_whitelist | length > 0
+    when: nutanix_proxy_whitelist | length > 0
+
+  - include_tasks: debug.yml
+    when:
+      - nutanix_debug
