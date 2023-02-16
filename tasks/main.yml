@@ -1,35 +1,37 @@
 # tasks file for nutanix_role_nutanix_proxy
-  - name: Check nutanix_proxy_name is provided
-    fail:
-      msg: var nutanix_proxy_name is required
-    when:
-      - nutanix_proxy_name is not defined
+- name: Check nutanix_proxy_name is provided
+  fail:
+    msg: var nutanix_proxy_name is required
+  when:
+    - nutanix_proxy_name is not defined
 
-  - name: Check nutanix_proxy_address is provided
-    fail:
-      msg: var nutanix_proxy_address is required
-    when:
-      - nutanix_proxy_address is not defined
+- name: Check nutanix_proxy_address is provided
+  fail:
+    msg: var nutanix_proxy_address is required
+  when:
+    - nutanix_proxy_address is not defined
 
-  - name: Check nutanix_proxy_port is provided
-    fail:
-      msg: var nutanix_proxy_port is required
-    when:
-      - nutanix_proxy_port is not defined
+- name: Check nutanix_proxy_port is provided
+  fail:
+    msg: var nutanix_proxy_port is required
+  when:
+    - nutanix_proxy_port is not defined
 
-  - name: Check nutanix_proxy_types is provided
-    fail:
-      msg: var nutanix_proxy_types is required
-    when:
-      - nutanix_proxy_types is not defined
+- name: Check nutanix_proxy_types is provided
+  fail:
+    msg: var nutanix_proxy_types is required
+  when:
+    - nutanix_proxy_types is not defined
 
-  - name: Inputs for proxy server task
-    include_tasks: proxy.yml
+- include_tasks: setup_api.yml
 
-  - name: Inputs for proxy server whitelist task
-    include_tasks: whitelist.yml
-    when: nutanix_proxy_whitelist | length > 0
+- name: Inputs for proxy server task
+  include_tasks: proxy.yml
 
-  - include_tasks: debug.yml
-    when:
-      - nutanix_debug
+- name: Inputs for proxy server whitelist task
+  include_tasks: whitelist.yml
+  when: nutanix_proxy_whitelist | length > 0
+
+- include_tasks: debug.yml
+  when:
+    - nutanix_debug

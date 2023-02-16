@@ -1,112 +1,112 @@
 ---
-  - name: Gather proxy configuration from cluster
-    uri:
-      url: "{{ nutanix_api_v2 }}/http_proxies"
-      method: GET
-      validate_certs: "{{ validate_certs }}"
-      body_format: json
-      headers:
-        Authorization: "{{ nutanix_api_auth }}"
-      return_content: yes
-    register: nutanix_configured_proxies
+- name: Gather proxy configuration from cluster
+  uri:
+    url: "https://{{nutanix_host}}:{{nutanix_port}}/PrismGateway/services/rest/v2.0/http_proxies"
+    method: GET
+    validate_certs: "{{ validate_certs }}"
+    body_format: json
+    headers:
+      Authorization: "{{ nutanix_api_auth }}"
+    return_content: yes
+  register: nutanix_configured_proxies
 
-  - name: compare current proxy name to new proxy name
-    set_fact:
-      nutanix_proxy_name_mismatch:
-    when:
+- name: compare current proxy name to new proxy name
+  set_fact:
+    nutanix_proxy_name_mismatch:
+  when:
     - nutanix_configured_proxies.json.metadata.count == 1
     - nutanix_configured_proxies.json.entities[0].name != nutanix_proxy_name
 
-  - name: compare current proxy config to new proxy config
-    set_fact:
-      nutanix_proxy_config_mismatch:
-    when:
+- name: compare current proxy config to new proxy config
+  set_fact:
+    nutanix_proxy_config_mismatch:
+  when:
     - nutanix_configured_proxies.json.metadata.count == 1
     - ( nutanix_configured_proxies.json.entities[0].address != nutanix_proxy_address or
-        nutanix_configured_proxies.json.entities[0].port != nutanix_proxy_port or
-        nutanix_configured_proxies.json.entities[0].username != nutanix_proxy_username | default(None) )
+      nutanix_configured_proxies.json.entities[0].port != nutanix_proxy_port or
+      nutanix_configured_proxies.json.entities[0].username != nutanix_proxy_username | default(None) )
 
-  - name: compare configured proxy types to defined proxy types
-    set_fact:
-      nutanix_proxy_extra_type:
-    when:
+- name: compare configured proxy types to defined proxy types
+  set_fact:
+    nutanix_proxy_extra_type:
+  when:
     - nutanix_configured_proxies.json.metadata.count == 1
     - item not in nutanix_proxy_types
-    with_items: "{{ nutanix_configured_proxies.json.entities[0].proxy_types }}"
+  with_items: "{{ nutanix_configured_proxies.json.entities[0].proxy_types }}"
 
-  - name: compare defined proxy types to configured proxy types
-    set_fact:
-      nutanix_proxy_missing_type:
-    when:
+- name: compare defined proxy types to configured proxy types
+  set_fact:
+    nutanix_proxy_missing_type:
+  when:
     - nutanix_configured_proxies.json.metadata.count == 1
     - item not in nutanix_configured_proxies.json.entities[0].proxy_types
-    with_items: "{{ nutanix_proxy_types }}"
+  with_items: "{{ nutanix_proxy_types }}"
 
-  - name: delete prism proxy configuration to fix name mismatch
-    uri:
-      url: "{{ nutanix_api_v2 }}/http_proxies/{{ nutanix_configured_proxies.json.entities[0].name }}"
-      method: DELETE
-      validate_certs: "{{ validate_certs }}"
-      body_format: json
-      headers:
-        Authorization: "{{ nutanix_api_auth }}"
-      status_code: 204
-      return_content: yes
-    changed_when: true
-    register: nutanix_proxy_deleted
-    when:
-      - nutanix_configured_proxies.json.metadata.count == 1
-      - nutanix_proxy_name_mismatch is defined
+- name: delete prism proxy configuration to fix name mismatch
+  uri:
+    url: "https://{{nutanix_host}}:{{nutanix_port}}/PrismGateway/services/rest/v2.0/http_proxies/{{ nutanix_configured_proxies.json.entities[0].name }}"
+    method: DELETE
+    validate_certs: "{{ validate_certs }}"
+    body_format: json
+    headers:
+      Authorization: "{{ nutanix_api_auth }}"
+    status_code: 204
+    return_content: yes
+  changed_when: true
+  register: nutanix_proxy_deleted
+  when:
+    - nutanix_configured_proxies.json.metadata.count == 1
+    - nutanix_proxy_name_mismatch is defined
 
-  - name: create proxy configuration
-    uri:
-      url: "{{ nutanix_api_v2 }}/http_proxies"
-      method: POST
-      validate_certs: "{{ validate_certs }}"
-      body: "{{ lookup('template', 'proxy.j2') | from_yaml | to_json }}"
-      body_format: json
-      status_code: 201
-      headers:
-        Authorization: "{{ nutanix_api_auth }}"
-      return_content: yes
-    register: nutanix_create_proxy
-    when:
-      - nutanix_configured_proxies.json.metadata.count == 0 or nutanix_proxy_name_mismatch is defined
+- name: create proxy configuration
+  uri:
+    url: "https://{{nutanix_host}}:{{nutanix_port}}/PrismGateway/services/rest/v2.0/http_proxies"
+    method: POST
+    validate_certs: "{{ validate_certs }}"
+    body: "{{ lookup('template', 'proxy.j2') | from_yaml | to_json }}"
+    body_format: json
+    status_code: 201
+    headers:
+      Authorization: "{{ nutanix_api_auth }}"
+    return_content: yes
+  register: nutanix_create_proxy
+  when:
+    - nutanix_configured_proxies.json.metadata.count == 0 or nutanix_proxy_name_mismatch is defined
 
-  - name: update proxy configuration
-    uri:
-      url: "{{ nutanix_api_v2 }}/http_proxies"
-      method: PUT
-      validate_certs: "{{ validate_certs }}"
-      body: "{{ lookup('template', 'proxy.j2') | from_yaml | to_json }}"
-      body_format: json
-      status_code: 200
-      headers:
-        Authorization: "{{ nutanix_api_auth }}"
-      return_content: yes
-    register: nutanix_update_proxy
-    changed_when: nutanix_update_proxy.json.value == true
-    when:
-      - nutanix_configured_proxies.json.metadata.count == 1
-      - nutanix_proxy_name_mismatch is not defined
-      - nutanix_proxy_config_mismatch is defined
+- name: update proxy configuration
+  uri:
+    url: "https://{{nutanix_host}}:{{nutanix_port}}/PrismGateway/services/rest/v2.0/http_proxies"
+    method: PUT
+    validate_certs: "{{ validate_certs }}"
+    body: "{{ lookup('template', 'proxy.j2') | from_yaml | to_json }}"
+    body_format: json
+    status_code: 200
+    headers:
+      Authorization: "{{ nutanix_api_auth }}"
+    return_content: yes
+  register: nutanix_update_proxy
+  changed_when: nutanix_update_proxy.json.value == true
+  when:
+    - nutanix_configured_proxies.json.metadata.count == 1
+    - nutanix_proxy_name_mismatch is not defined
+    - nutanix_proxy_config_mismatch is defined
 
-  - name: Wait HTTP proxy update to be completed
-    block:
-      - name: Checking HTTP proxy configuration
-        uri:
-          url: "{{ nutanix_api_v2 }}/http_proxies"
-          method: GET
-          validate_certs: "{{ validate_certs }}"
-          status_code: 200
-          headers:
-            Authorization: "{{ nutanix_api_auth }}"
-        register: nutanix_proxy_status
-        until:
-          - nutanix_proxy_status.json.entities[0].name == nutanix_proxy_name
-          - nutanix_proxy_status.json.entities[0].address == nutanix_proxy_address
-          - nutanix_proxy_status.json.entities[0].port == nutanix_proxy_port
-          - nutanix_proxy_status.json.entities[0].username == nutanix_proxy_username | default(None)
-        retries: 60
-        delay: 10
-        when: nutanix_create_proxy is defined or nutanix_update_proxy is defined
+- name: Wait HTTP proxy update to be completed
+  block:
+    - name: Checking HTTP proxy configuration
+      uri:
+        url: "https://{{nutanix_host}}:{{nutanix_port}}/PrismGateway/services/rest/v2.0/http_proxies"
+        method: GET
+        validate_certs: "{{ validate_certs }}"
+        status_code: 200
+        headers:
+          Authorization: "{{ nutanix_api_auth }}"
+      register: nutanix_proxy_status
+      until:
+        - nutanix_proxy_status.json.entities[0].name == nutanix_proxy_name
+        - nutanix_proxy_status.json.entities[0].address == nutanix_proxy_address
+        - nutanix_proxy_status.json.entities[0].port == nutanix_proxy_port
+        - nutanix_proxy_status.json.entities[0].username == nutanix_proxy_username | default(None)
+      retries: 60
+      delay: 10
+      when: nutanix_create_proxy is defined or nutanix_update_proxy is defined

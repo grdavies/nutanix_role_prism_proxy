@@ -1,57 +1,57 @@
 ---
-  - name: Gather proxy configuration from cluster
-    uri:
-      url: "{{ nutanix_api_v2 }}/http_proxies"
-      method: GET
-      validate_certs: "{{ validate_certs }}"
-      body_format: json
-      headers:
-        Authorization: "{{ nutanix_api_auth }}"
-      return_content: yes
-    register: nutanix_configured_proxies
+- name: Gather proxy configuration from cluster
+  uri:
+    url: "https://{{nutanix_host}}:{{nutanix_port}}/PrismGateway/services/rest/v2.0/http_proxies"
+    method: GET
+    validate_certs: "{{ validate_certs }}"
+    body_format: json
+    headers:
+      Authorization: "{{ nutanix_api_auth }}"
+    return_content: yes
+  register: nutanix_configured_proxies
 
-  - name: Gather proxy whitelist
-    uri:
-      url: "{{ nutanix_api_v1 }}/http_proxies/whitelist"
-      method: GET
-      validate_certs: "{{ validate_certs }}"
-      body_format: json
-      headers:
-        Authorization: "{{ nutanix_api_auth }}"
-      return_content: yes
-    register: nutanix_current_proxy_whitelist
+- name: Gather proxy whitelist
+  uri:
+    url: "https://{{nutanix_host}}:{{nutanix_port}}/PrismGateway/services/rest/v1/http_proxies/whitelist"
+    method: GET
+    validate_certs: "{{ validate_certs }}"
+    body_format: json
+    headers:
+      Authorization: "{{ nutanix_api_auth }}"
+    return_content: yes
+  register: nutanix_current_proxy_whitelist
 
-  - name: Compare configured proxy whitelist to defined proxy whitelist
-    set_fact:
-      nutanix_proxy_whitelist_extra:
-    loop: "{{ nutanix_current_proxy_whitelist.json.whitelist | map(attribute='target') | list }}"
-    register: compare_configured_whitelist
-    when:
-      - nutanix_current_proxy_whitelist.json.whitelist | length() > 0
-      - item not in nutanix_proxy_whitelist
-      - nutanix_configured_proxies.json.metadata.count == 1
+- name: Compare configured proxy whitelist to defined proxy whitelist
+  set_fact:
+    nutanix_proxy_whitelist_extra:
+  loop: "{{ nutanix_current_proxy_whitelist.json.whitelist | map(attribute='target') | list }}"
+  register: compare_configured_whitelist
+  when:
+    - nutanix_current_proxy_whitelist.json.whitelist | length() > 0
+    - item not in nutanix_proxy_whitelist
+    - nutanix_configured_proxies.json.metadata.count == 1
 
-  - name: Compare defined proxy whitelist to configured proxy whitelist
-    set_fact:
-      nutanix_proxy_whitelist_missing:
-    loop: "{{ nutanix_proxy_whitelist }}"
-    register: compare_defined_whitelist
-    when:
-      - item not in nutanix_current_proxy_whitelist.json.whitelist | map(attribute='target') | list
-      - nutanix_configured_proxies.json.metadata.count == 1
+- name: Compare defined proxy whitelist to configured proxy whitelist
+  set_fact:
+    nutanix_proxy_whitelist_missing:
+  loop: "{{ nutanix_proxy_whitelist }}"
+  register: compare_defined_whitelist
+  when:
+    - item not in nutanix_current_proxy_whitelist.json.whitelist | map(attribute='target') | list
+    - nutanix_configured_proxies.json.metadata.count == 1
 
-  - name: Update proxy whitelist
-    uri:
-      url: "{{ nutanix_api_v1 }}/http_proxies/whitelist"
-      method: PUT
-      validate_certs: "{{ validate_certs }}"
-      body: "{{ lookup('template', 'proxy_whitelist.j2') | from_yaml | to_json }}"
-      body_format: json
-      headers:
-        Authorization: "{{ nutanix_api_auth }}"
-      return_content: yes
-    changed_when: true
-    register: nutanix_proxy_whitelist_update
-    when:
-      - nutanix_configured_proxies.json.metadata.count == 1
-      - nutanix_proxy_whitelist_extra is defined or nutanix_proxy_whitelist_missing is defined
+- name: Update proxy whitelist
+  uri:
+    url: "https://{{nutanix_host}}:{{nutanix_port}}/PrismGateway/services/rest/v1/http_proxies/whitelist"
+    method: PUT
+    validate_certs: "{{ validate_certs }}"
+    body: "{{ lookup('template', 'proxy_whitelist.j2') | from_yaml | to_json }}"
+    body_format: json
+    headers:
+      Authorization: "{{ nutanix_api_auth }}"
+    return_content: yes
+  changed_when: true
+  register: nutanix_proxy_whitelist_update
+  when:
+    - nutanix_configured_proxies.json.metadata.count == 1
+    - nutanix_proxy_whitelist_extra is defined or nutanix_proxy_whitelist_missing is defined

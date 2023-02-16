@@ -1,6 +1,11 @@
 ---
 # defaults file for nutanix_role_nutanix_proxy
-  validate_certs: no
-  nutanix_proxy_whitelist: []
-  nutanix_proxy_types:
-    - "HTTP"
+nutanix_host: ""
+nutanix_username: ""
+nutanix_password: ""
+nutanix_port: 9440
+validate_certs: no
+nutanix_debug: no
+nutanix_proxy_whitelist: []
+nutanix_proxy_types:
+  - "HTTP"
